@@ -1,0 +1,14 @@
+# Every change is reviewed by a maintainer.
+* @innerluxesdev
+
+# The sentences come from the W3C specifications, MDN, web.dev and the Workbox page, and the tokenizers and the checks decide every line of the report; changes need extra care.
+/src/data.js @innerluxesdev
+/research/ @innerluxesdev
+/src/tokenizer.js @innerluxesdev
+/src/html.js @innerluxesdev
+/src/json.js @innerluxesdev
+/src/files.js @innerluxesdev
+/src/worker.js @innerluxesdev
+/src/manifest.js @innerluxesdev
+/src/rules.js @innerluxesdev
+/src/check.js @innerluxesdev
