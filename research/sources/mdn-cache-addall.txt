@@ -1,0 +1,109 @@
+Source: https://developer.mozilla.org/en-US/docs/Web/API/Cache/addAll
+
+# Cache: addAll() method
+
+Baseline
+
+Widely available
+
+This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2018.
+
+See full compatibility
+
+Learn more
+
+Secure context: This feature is available only in secure contexts (HTTPS), in some or all supporting browsers.
+
+Note: This feature is available in Web Workers.
+
+The addAll() method of the Cache interface takes an array of URLs, retrieves them, and adds the resulting response objects to the given cache. The request objects created during retrieval become keys to the stored response operations.
+
+Note:
+addAll() will overwrite any key/value pairs
+previously stored in the cache that match the request, but will fail if a
+resulting put() operation would overwrite a previous cache entry stored by the same addAll() method.
+
+# Syntax
+
+js
+
+addAll(requests)
+
+# Parameters
+
+requests
+
+An array of requests for the resources you want to add to the cache. These can be Request objects or URLs.
+
+These requests are used as parameters to the Request() constructor, so URLs follow the same rules as for that constructor. In particular, URLs may be relative to the base URL, which is the document's baseURI in a window context, or WorkerGlobalScope.location in a worker context.
+
+# Return value
+
+A Promise that resolves with undefined.
+
+# Exceptions
+
+TypeError
+
+The URL scheme is not http or https.
+
+The Response status is not in the 200 range (i.e., not a successful response.) This occurs if the request does not return successfully, but also if the request is a cross-origin no-cors request (in which case the reported status is always 0.)
+
+# Examples
+
+This code block waits for an InstallEvent to fire, then runs
+waitUntil() to handle the install process for
+the app. This consists of calling CacheStorage.open to create a new
+cache, then using addAll() to add a series of assets to it.
+
+js
+
+this.addEventListener("install", (event) => {
+event.waitUntil(
+caches
+.open("v1")
+.then((cache) =>
+cache.addAll([
+"/",
+"/index.html",
+"/style.css",
+"/app.js",
+"/image-list.js",
+"/star-wars-logo.jpg",
+"/gallery/",
+"/gallery/bountyHunters.jpg",
+"/gallery/myLittleVader.jpg",
+"/gallery/snowTroopers.jpg",
+]),
+),
+);
+});
+
+# Specifications
+
+Specification
+|
+
+Service Workers Nightly
+# cache-addAll |
+
+# Browser compatibility
+
+# See also
+
+Using Service Workers
+
+Cache
+
+Window.caches and WorkerGlobalScope.caches
+
+# Help improve MDN
+
+Yes
+
+No
+
+Learn how to contribute
+This page was last modified on Jun 24, 2025 by MDN contributors.
+
+View this page on GitHub • Report a problem with this content

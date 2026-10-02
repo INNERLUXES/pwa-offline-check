@@ -1,0 +1,77 @@
+Source: https://web.dev/articles/install-criteria
+
+web.dev
+
+Resources
+
+Progressive Web Apps
+
+# What does it take to be installable?
+
+Pete LePage
+
+Progressive Web Apps (PWAs) are modern, high quality applications built with
+web technology. PWAs offer similar capabilities to mobile and desktop apps, they
+are reliable even in unstable network conditions, and are installable making
+it easier for users to find and use them.
+
+Most users are familiar with installing applications, and the benefits of an
+installed experience. Installed applications appear on operating system
+launch surfaces, such as the Applications folder on macOS X, the Start menu
+on Windows, and the home screen on Android and iOS. Installed applications
+also show up in the activity switcher, device search engines such as
+Spotlight and in content sharing sheets.
+
+Most browsers indicate to the user that your Progressive Web App (PWA) is
+installable when it meets certain criteria. Example indicators include an
+Install button in the address bar, or an Install menu item in the overflow
+menu.
+
+Browser provided install promotion (desktop)
+
+Browser provided install promotion (mobile)
+
+In addition, when the criteria is met, many browsers will fire a
+beforeinstallprompt event, allowing you to provide a custom in-app UX that
+that will trigger the install flow within your app.
+
+# Install criteria
+
+In Chrome, your Progressive Web App must meet the following criteria before
+it will fire the beforeinstallprompt event and show the in-browser install
+promotion:
+
+The web app is not already installed.
+
+Meets the user engagement heuristics:
+
+The user needs to have clicked or tapped on the page at least once, at any
+time, even during a previous page load.
+
+The user needs to have spent at least 30 seconds viewing the page,
+at any time.
+
+Be served over HTTPS.
+
+Includes a web app manifest that includes:
+
+short_name or name
+
+icons - must include a 192px and a 512px icon
+
+start_url
+
+display - must be one of fullscreen, standalone, minimal-ui, or window-controls-overlay
+
+prefer_related_applications must not be present, or be false
+
+Other browsers have similar criteria for installation, though there may be
+minor differences. Check the respective sites for full details:
+
+Edge PWA Requirements
+
+Firefox PWA Requirements
+
+Except as otherwise noted, the content of this page is licensed under the Creative Commons Attribution 4.0 License, and code samples are licensed under the Apache 2.0 License. For details, see the Google Developers Site Policies. Java is a registered trademark of Oracle and/or its affiliates.
+
+Last updated 2024-09-19 UTC.

@@ -1,0 +1,76 @@
+Source: https://developer.mozilla.org/en-US/docs/Web/API/Clients/claim
+
+# Clients: claim() method
+
+Baseline
+
+Widely available
+
+This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2018.
+
+See full compatibility
+
+Learn more
+
+Note: This feature is only available in Service Workers.
+
+The claim() method of the Clients interface allows an active service worker to set itself as the controller for all clients within its scope.
+This triggers a controllerchange event on navigator.serviceWorker in any clients that become controlled by this service worker.
+
+When a service worker is initially registered, pages won't use it until they next
+load. The claim() method causes those pages to be controlled immediately.
+Be aware that this results in your service worker controlling pages that loaded
+regularly over the network, or possibly via a different service worker.
+
+# Syntax
+
+js
+
+claim()
+
+# Parameters
+
+None.
+
+# Return value
+
+A Promise that resolves to undefined.
+
+# Examples
+
+The following example uses claim() inside service worker's activate event listener so that clients loaded in the same scope do not need to be reloaded before their fetches will go through this service worker.
+
+js
+
+self.addEventListener("activate", (event) => {
+event.waitUntil(clients.claim());
+});
+
+# Specifications
+
+Specification
+|
+
+Service Workers Nightly
+# clients-claim |
+
+# Browser compatibility
+
+# See also
+
+Using Service Workers
+
+The service worker lifecycle
+
+self.skipWaiting() - skip the service worker's waiting phase
+
+# Help improve MDN
+
+Yes
+
+No
+
+Learn how to contribute
+This page was last modified on Sep 24, 2024 by MDN contributors.
+
+View this page on GitHub • Report a problem with this content

@@ -1,0 +1,1154 @@
+Source: https://developer.chrome.com/docs/workbox/modules/workbox-precaching
+
+Home
+
+Docs
+
+Workbox
+
+Modules
+
+# workbox-precaching
+
+One feature of service workers is the ability to save a set of files to the
+cache when the service worker is installing. This is often referred to as
+"precaching", since you are caching content ahead of the service worker being
+used.
+
+The main reason for doing this is that it gives developers control over the
+cache, meaning they can determine when and how long a file is cached as well
+as serve it to the browser without going to the network, meaning it can be
+used to create web apps that work offline.
+
+Workbox takes a lot of the heavy lifting out of precaching by simplifying
+the API and ensuring assets are downloaded efficiently.
+
+# How workbox-precaching Works
+
+When a web app is loaded for the first time, workbox-precaching will look at all
+the assets you want to download, remove any duplicates and hook up the relevant
+service worker events to download and store the assets. URLs that
+already include
+versioning information (like a content hash) are used as cache keys without any
+further modification. URLs that don't include versioning information have an extra
+URL query parameter appended to their cache key representing a hash of their content
+that Workbox generates at build time.
+
+workbox-precaching does all of this during the service worker's
+install event.
+
+When a user later revisits your web app and you have a new service worker with
+different precached assets, workbox-precaching will look at the new list
+and determine which assets are completely new and which of the existing assets
+need updating, based on their revisioning. Any new assets, or updating revisions,
+will be added to the cache during the new service worker's install event.
+
+This new service worker won't be used to respond to requests until its activate
+event has been triggered. It's in the activate event that workbox-precaching
+will check for any cached assets that are no longer present in the
+list of current URLs, and remove those from
+the cache.
+
+workbox-precaching will perform these steps each time your service worker is installed
+and activated, ensuring the user has the latest assets, and only downloading the
+files that have changed.
+
+# Serving Precached Responses
+
+Calling
+precacheAndRoute()
+or
+addRoute()
+will create a route that matches
+requests for precached URLs.
+
+The response strategy used in this route is
+cache-first:
+the precached response will be used, unless that cached response is not present (due to some
+unexpected error), in which case a network response will be used instead.
+
+The order in which you call precacheAndRoute() or addRoute() is important.
+You would normally want to call it early on in your service worker file, before
+registering any additional routes with
+registerRoute().
+If you did call registerRoute() first, and that route matched an incoming
+request, whatever strategy you defined in that additional route will be used to
+respond, instead of the cache-first strategy used by workbox-precaching.
+
+# Explanation of the Precache List
+
+workbox-precaching expects an array of objects with a url and revision
+property. This array is sometimes referred to as a precache manifest:
+
+import {precacheAndRoute} from 'workbox-precaching';
+
+precacheAndRoute([
+{url: '/index.html', revision: '383676'},
+{url: '/styles/app.0c9a31.css', revision: null},
+{url: '/scripts/app.0d5770.js', revision: null},
+// ... other entries ...
+]);
+
+This list references a set of URLs, each with their own piece of "revisioning"
+information.
+
+For the second and third object in the example above, the revision property is
+set to null. This is because the revisioning information
+is in the URL itself, which is generally a best practice for static assets.
+
+The first object (/index.html) explicitly sets a revision property, which is
+an auto-generated hash of the file's contents. Unlike JavaScript and CSS resources, HTML files generally cannot
+include revisioning information in their URLs, otherwise links to these files on
+the web would break any time the content of the page changed.
+
+By passing a revision property to precacheAndRoute(), Workbox can know
+when the file has changed and update it accordingly.
+
+Workbox comes with tools to help with generating this list:
+
+workbox-build: This is a node package that can be used in a gulp task or as
+an npm run script.
+
+workbox-webpack-plugin: webpack users can use this plugin.
+
+workbox-cli: Our CLI can also be used to generate the list of assets and add
+them to your service worker.
+
+# Incoming Requests for Precached Files
+
+One thing that workbox-precaching will do out of the box is manipulate
+the incoming network requests to try and match precached files. This
+accommodates for common practices on the web.
+
+For example, a request for / can usually be satisfied by the file at
+/index.html.
+
+Below is the list of manipulations that workbox-precaching performs by default,
+and how you can alter that behavior.
+
+# Ignore URL Parameters
+
+Requests with search parameters can be altered to remove specific values, or
+remove all values.
+
+By default, search parameters that start with utm_ or exactly match fbclid are removed,
+meaning that a request for
+/about.html?utm_campaign=abcd will be fulfilled with a precached entry for /about.html.
+
+You can ignore a different set of search parameters using ignoreURLParametersMatching:
+
+import {precacheAndRoute} from 'workbox-precaching';
+
+precacheAndRoute(
+[
+{url: '/index.html', revision: '383676'},
+{url: '/styles/app.0c9a31.css', revision: null},
+{url: '/scripts/app.0d5770.js', revision: null},
+],
+{
+// Ignore all URL parameters.
+ignoreURLParametersMatching: [/.*/],
+}
+);
+
+# Directory Index
+
+Requests ending in a / will, by default, be matched against entries with an index.html appended
+to the end. This means an incoming request for / can automatically be handled with the precached
+entry /index.html.
+
+You can alter this to something else, or disable it completely, by setting directoryIndex:
+
+import {precacheAndRoute} from 'workbox-precaching';
+
+precacheAndRoute(
+[
+{url: '/index.html', revision: '383676'},
+{url: '/styles/app.0c9a31.css', revision: null},
+{url: '/scripts/app.0d5770.js', revision: null},
+],
+{
+directoryIndex: null,
+}
+);
+
+# Clean URLs
+
+If a request fails to match the precache, we'll add .html to the end to support
+"clean" URLs (a.k.a. "pretty" URLs). This means a request like /about will
+be handled by the precached entry for /about.html.
+
+You can disable this behavior by setting cleanUrls:
+
+import {precacheAndRoute} from 'workbox-precaching';
+
+precacheAndRoute([{url: '/about.html', revision: 'b79cd4'}], {
+cleanUrls: false,
+});
+
+# Custom Manipulations
+
+If you want to define custom matches from incoming requests to precached assets,
+you can do so with the urlManipulation option. This should be a callback
+that returns an array of possible matches.
+
+import {precacheAndRoute} from 'workbox-precaching';
+
+precacheAndRoute(
+[
+{url: '/index.html', revision: '383676'},
+{url: '/styles/app.0c9a31.css', revision: null},
+{url: '/scripts/app.0d5770.js', revision: null},
+],
+{
+urlManipulation: ({url}) => {
+// Your logic goes here...
+return [alteredUrlOption1, alteredUrlOption2];
+},
+}
+);
+
+# Advanced Usage
+
+# Using PrecacheController Directly
+
+By default, workbox-precaching will set up the install and activate listeners for you.
+For developers familiar with service workers, this may not be desirable if you need more control.
+
+Instead of using the default export, you can use the
+PrecacheController
+directly to add items to the precache, determine when these assets are installed, and
+when cleanup should occur.
+
+import {PrecacheController} from 'workbox-precaching';
+
+const precacheController = new PrecacheController();
+precacheController.addToCacheList([
+{url: '/styles/example-1.abcd.css', revision: null},
+{url: '/styles/example-2.1234.css', revision: null},
+{url: '/scripts/example-1.abcd.js', revision: null},
+{url: '/scripts/example-2.1234.js', revision: null},
+]);
+
+precacheController.addToCacheList([{
+url: '/index.html',
+revision: 'abcd',
+}, {
+url: '/about.html',
+revision: '1234',
+}]);
+
+self.addEventListener('install', (event) => {
+// Passing in event is required in Workbox v6+
+event.waitUntil(precacheController.install(event));
+});
+
+self.addEventListener('activate', (event) => {
+// Passing in event is required in Workbox v6+
+event.waitUntil(precacheController.activate(event));
+});
+
+self.addEventListener('fetch', (event) => {
+const cacheKey = precacheController.getCacheKeyForURL(event.request.url);
+event.respondWith(caches.match(cacheKey).then(...));
+});
+
+# Reading Precached Assets Directly
+
+There are times when you might need to read a precached asset directly, outside
+the context of the routing that workbox-precaching can automatically perform.
+For instance, you might want to precache partial HTML templates that then need
+to be retrieved and used when constructing a full response.
+
+In general, you can use the
+Cache Storage API
+to obtain the precached Response objects, but there is one wrinkle: the URL
+cache key that needs to be used when calling cache.match()
+might contain a versioning parameter that workbox-precaching automatically
+creates and maintains.
+
+To get the correct cache key you can call
+getCacheKeyForURL(),
+passing in the original URL, and then use the result to perform a
+cache.match() on the appropriate cache.
+
+import {cacheNames} from 'workbox-core';
+import {getCacheKeyForURL} from 'workbox-precaching';
+
+const cache = await caches.open(cacheNames.precache);
+const response = await cache.match(getCacheKeyForURL('/precached-file.html'));
+
+Alternatively, if all you need is the precached Response object, you can call
+matchPrecache(),
+which will automatically use the correct cache key and search in the correct
+cache:
+
+import {matchPrecache} from 'workbox-precaching';
+
+const response = await matchPrecache('/precached-file.html');
+
+# Clean Up Old Precaches
+
+Most releases of Workbox maintain the same format for storing precached data,
+and precaches created by older versions of Workbox can normally be used as-is by
+newer releases. Rarely, though, there is a breaking change in precaching storage
+that requires existing users to re-download everything, and which renders
+previously precached data obsolete. (Such a change happened in between the
+Workbox v3 and v4 releases.)
+
+This obsolete data shouldn't interfere with normal operations, but it does
+contribute towards your overall storage quota usage, and it can be friendlier to
+your users to explicitly delete it. You can do this by adding
+cleanupOutdatedCaches()
+to your service worker, or setting cleanupOutdatedCaches: true if you're using
+one of Workbox's build tools to generate your service worker.
+
+# Using Subresource Integrity
+
+Some developers might want the added guarantees offered by
+subresource integrity
+enforcement when retrieving precached URLs from the network.
+
+An additional, optional property called integrity can be added to any entry in
+the precache manifest. If provided, it will be used as the
+integrity value
+when constructing the Request used to populate the cache. If there's a
+mismatch, the precaching process will fail.
+
+Determining which precache manifest entries should have integrity properties,
+and figuring out the appropriate values to use, is outside the scope of
+Workbox's build tools. Instead, developers who want to opt-in to this
+functionality should modify the precache manifest that Workbox generates to add
+in the appropriate info themselves. The manifestTransform option in Workbox's
+build tools configuration can help:
+
+const ssri = require('ssri');
+
+const integrityManifestTransform = (originalManifest, compilation) => {
+const warnings = [];
+const manifest = originalManifest.map(entry => {
+// If some criteria match:
+if (entry.url.startsWith('...')) {
+// This has to be a synchronous function call, for example:
+// compilation will be set when using workbox-webpack-plugin.
+// When using workbox-build directly, you can read the file's
+// contents from disk using, e.g., the fs module.
+const asset = compilation.getAsset(entry.url);
+entry.integrity = ssri.fromData(asset.source.source()).toString();
+
+// Push a message to warnings if needed.
+}
+return entry;
+});
+
+return {warnings, manifest};
+};
+
+// Then add manifestTransform: [integrityManifestTransform]
+// to your Workbox build configuration.
+
+# Types
+
+# CleanupResult
+
+# Properties
+
+deletedCacheRequests
+
+string[]
+
+# InstallResult
+
+# Properties
+
+notUpdatedURLs
+
+string[]
+
+updatedURLs
+
+string[]
+
+# PrecacheController
+
+Performs efficient precaching of assets.
+
+# Properties
+
+constructor
+
+void
+
+Create a new PrecacheController.
+
+The constructor function looks like:
+
+(options?: PrecacheControllerOptions) => {...}
+
+options
+
+PrecacheControllerOptions optional
+
+returns
+
+PrecacheController
+
+strategy
+
+Strategy
+
+activate
+
+void
+
+Deletes assets that are no longer present in the current precache manifest.
+Call this method from the service worker activate event.
+
+Note: this method calls event.waitUntil() for you, so you do not need
+to call it yourself in your event handlers.
+
+The activate function looks like:
+
+(event: ExtendableEvent) => {...}
+
+event
+
+ExtendableEvent
+
+returns
+
+Promise<CleanupResult>
+
+addToCacheList
+
+void
+
+This method will add items to the precache list, removing duplicates
+and ensuring the information is valid.
+
+The addToCacheList function looks like:
+
+(entries: (string | PrecacheEntry)[]) => {...}
+
+entries
+
+(string | PrecacheEntry)[]
+
+Array of entries to precache.
+
+createHandlerBoundToURL
+
+void
+
+Returns a function that looks up url in the precache (taking into
+account revision information), and returns the corresponding Response.
+
+The createHandlerBoundToURL function looks like:
+
+(url: string) => {...}
+
+url
+
+string
+
+The precached URL which will be used to lookup the
+Response.
+
+returns
+
+RouteHandlerCallback
+
+getCacheKeyForURL
+
+void
+
+Returns the cache key used for storing a given URL. If that URL is
+unversioned, like `/index.html', then the cache key will be the original
+URL with a search parameter appended to it.
+
+The getCacheKeyForURL function looks like:
+
+(url: string) => {...}
+
+url
+
+string
+
+A URL whose cache key you want to look up.
+
+returns
+
+string
+
+The versioned URL that corresponds to a cache key
+for the original URL, or undefined if that URL isn't precached.
+
+getCachedURLs
+
+void
+
+Returns a list of all the URLs that have been precached by the current
+service worker.
+
+The getCachedURLs function looks like:
+
+() => {...}
+
+returns
+
+string[]
+
+The precached URLs.
+
+getIntegrityForCacheKey
+
+void
+
+The getIntegrityForCacheKey function looks like:
+
+(cacheKey: string) => {...}
+
+cacheKey
+
+string
+
+returns
+
+string
+
+The subresource integrity associated with the cache key,
+or undefined if it's not set.
+
+getURLsToCacheKeys
+
+void
+
+Returns a mapping of a precached URL to the corresponding cache key, taking
+into account the revision information for the URL.
+
+The getURLsToCacheKeys function looks like:
+
+() => {...}
+
+returns
+
+Map<stringstring>
+
+A URL to cache key mapping.
+
+install
+
+void
+
+Precaches new and updated assets. Call this method from the service worker
+install event.
+
+Note: this method calls event.waitUntil() for you, so you do not need
+to call it yourself in your event handlers.
+
+The install function looks like:
+
+(event: ExtendableEvent) => {...}
+
+event
+
+ExtendableEvent
+
+returns
+
+Promise<InstallResult>
+
+matchPrecache
+
+void
+
+This acts as a drop-in replacement for
+cache.match()
+with the following differences:
+
+It knows what the name of the precache is, and only checks in that cache.
+
+It allows you to pass in an "original" URL without versioning parameters,
+and it will automatically look up the correct cache key for the currently
+active revision of that URL.
+
+E.g., matchPrecache('index.html') will find the correct precached
+response for the currently active service worker, even if the actual cache
+key is '/index.html?__WB_REVISION__=1234abcd'.
+
+The matchPrecache function looks like:
+
+(request: string | Request) => {...}
+
+request
+
+string | Request
+
+The key (without revisioning parameters)
+to look up in the precache.
+
+returns
+
+Promise<Response>
+
+precache
+
+void
+
+Adds items to the precache list, removing any duplicates and
+stores the files in the
+cache" when the service
+worker installs.
+
+This method can be called multiple times.
+
+The precache function looks like:
+
+(entries: (string | PrecacheEntry)[]) => {...}
+
+entries
+
+(string | PrecacheEntry)[]
+
+# PrecacheEntry
+
+# Properties
+
+integrity
+
+string optional
+
+revision
+
+string optional
+
+url
+
+string
+
+# PrecacheFallbackPlugin
+
+PrecacheFallbackPlugin allows you to specify an "offline fallback"
+response to be used when a given strategy is unable to generate a response.
+
+It does this by intercepting the handlerDidError plugin callback
+and returning a precached response, taking the expected revision parameter
+into account automatically.
+
+Unless you explicitly pass in a PrecacheController instance to the
+constructor, the default instance will be used. Generally speaking, most
+developers will end up using the default.
+
+# Properties
+
+constructor
+
+void
+
+Constructs a new PrecacheFallbackPlugin with the associated fallbackURL.
+
+The constructor function looks like:
+
+(config: object) => {...}
+
+config
+
+object
+
+fallbackURL
+
+string
+
+A precached URL to use as the fallback
+if the associated strategy can't generate a response.
+
+precacheController
+
+PrecacheController optional
+
+returns
+
+PrecacheFallbackPlugin
+
+# PrecacheRoute
+
+A subclass of workbox-routing.Route that takes a
+workbox-precaching.PrecacheController
+instance and uses it to match incoming requests and handle fetching
+responses from the precache.
+
+# Properties
+
+constructor
+
+void
+
+The constructor function looks like:
+
+(precacheController: PrecacheController, options?: PrecacheRouteOptions) => {...}
+
+precacheController
+
+PrecacheController
+
+A PrecacheController
+instance used to both match requests and respond to fetch events.
+
+options
+
+PrecacheRouteOptions optional
+
+returns
+
+PrecacheRoute
+
+catchHandler
+
+RouteHandlerObject optional
+
+handler
+
+RouteHandlerObject
+
+match
+
+RouteMatchCallback
+
+method
+
+HTTPMethod
+
+setCatchHandler
+
+void
+
+The setCatchHandler function looks like:
+
+(handler: RouteHandler) => {...}
+
+handler
+
+RouteHandler
+
+A callback
+function that returns a Promise resolving to a Response
+
+# PrecacheRouteOptions
+
+# Properties
+
+cleanURLs
+
+boolean optional
+
+directoryIndex
+
+string optional
+
+ignoreURLParametersMatching
+
+RegExp[] optional
+
+urlManipulation
+
+urlManipulation optional
+
+# PrecacheStrategy
+
+A workbox-strategies.Strategy implementation
+specifically designed to work with
+workbox-precaching.PrecacheController
+to both cache and fetch precached assets.
+
+Note: an instance of this class is created automatically when creating a
+PrecacheController; it's generally not necessary to create this yourself.
+
+# Properties
+
+constructor
+
+void
+
+The constructor function looks like:
+
+(options?: PrecacheStrategyOptions) => {...}
+
+options
+
+PrecacheStrategyOptions optional
+
+returns
+
+PrecacheStrategy
+
+cacheName
+
+string
+
+fetchOptions
+
+RequestInit optional
+
+matchOptions
+
+CacheQueryOptions optional
+
+plugins
+
+WorkboxPlugin[]
+
+copyRedirectedCacheableResponsesPlugin
+
+WorkboxPlugin
+
+defaultPrecacheCacheabilityPlugin
+
+WorkboxPlugin
+
+_awaitComplete
+
+void
+
+The _awaitComplete function looks like:
+
+(responseDone: Promise<Response>, handler: StrategyHandler, request: Request, event: ExtendableEvent) => {...}
+
+responseDone
+
+Promise<Response>
+
+handler
+
+StrategyHandler
+
+request
+
+Request
+
+event
+
+ExtendableEvent
+
+returns
+
+Promise<void>
+
+_getResponse
+
+void
+
+The _getResponse function looks like:
+
+(handler: StrategyHandler, request: Request, event: ExtendableEvent) => {...}
+
+handler
+
+StrategyHandler
+
+request
+
+Request
+
+event
+
+ExtendableEvent
+
+returns
+
+Promise<Response>
+
+_handleFetch
+
+void
+
+The _handleFetch function looks like:
+
+(request: Request, handler: StrategyHandler) => {...}
+
+request
+
+Request
+
+handler
+
+StrategyHandler
+
+returns
+
+Promise<Response>
+
+_handleInstall
+
+void
+
+The _handleInstall function looks like:
+
+(request: Request, handler: StrategyHandler) => {...}
+
+request
+
+Request
+
+handler
+
+StrategyHandler
+
+returns
+
+Promise<Response>
+
+handle
+
+void
+
+Perform a request strategy and returns a Promise that will resolve with
+a Response, invoking all relevant plugin callbacks.
+
+When a strategy instance is registered with a Workbox
+workbox-routing.Route, this method is automatically
+called when the route matches.
+
+Alternatively, this method can be used in a standalone FetchEvent
+listener by passing it to event.respondWith().
+
+The handle function looks like:
+
+(options: FetchEvent | HandlerCallbackOptions) => {...}
+
+options
+
+FetchEvent | HandlerCallbackOptions
+
+A FetchEvent or an object with the
+properties listed below.
+
+returns
+
+Promise<Response>
+
+handleAll
+
+void
+
+Similar to workbox-strategies.Strategy~handle, but
+instead of just returning a Promise that resolves to a Response it
+it will return an tuple of [response, done] promises, where the former
+(response) is equivalent to what handle() returns, and the latter is a
+Promise that will resolve once any promises that were added to
+event.waitUntil() as part of performing the strategy have completed.
+
+You can await the done promise to ensure any extra work performed by
+the strategy (usually caching responses) completes successfully.
+
+The handleAll function looks like:
+
+(options: FetchEvent | HandlerCallbackOptions) => {...}
+
+options
+
+FetchEvent | HandlerCallbackOptions
+
+A FetchEvent or an object with the
+properties listed below.
+
+returns
+
+[Promise<Response>, Promise<void>]
+
+A tuple of [response, done]
+promises that can be used to determine when the response resolves as
+well as when the handler has completed all its work.
+
+# urlManipulation()
+
+workbox-precaching.urlManipulation( { url }: object,): URL[]
+
+# Type
+
+function
+
+# Parameters
+
+{ url }
+
+object
+
+url
+
+URL
+
+# Returns
+
+URL[]
+
+# Methods
+
+# addPlugins()
+
+workbox-precaching.addPlugins( plugins: WorkboxPlugin[],): void
+
+Adds plugins to the precaching strategy.
+
+# Parameters
+
+plugins
+
+WorkboxPlugin[]
+
+# addRoute()
+
+workbox-precaching.addRoute( options?: PrecacheRouteOptions,): void
+
+Add a fetch listener to the service worker that will
+respond to
+[network requests]https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers#Custom_responses_to_requests
+with precached assets.
+
+Requests for assets that aren't precached, the FetchEvent will not be
+responded to, allowing the event to fall through to other fetch event
+listeners.
+
+# Parameters
+
+options
+
+PrecacheRouteOptions optional
+
+# cleanupOutdatedCaches()
+
+workbox-precaching.cleanupOutdatedCaches(): void
+
+Adds an activate event listener which will clean up incompatible
+precaches that were created by older versions of Workbox.
+
+# createHandlerBoundToURL()
+
+workbox-precaching.createHandlerBoundToURL( url: string,): RouteHandlerCallback
+
+Helper function that calls
+PrecacheController#createHandlerBoundToURL on the default
+PrecacheController instance.
+
+If you are creating your own PrecacheController, then call the
+PrecacheController#createHandlerBoundToURL on that instance,
+instead of using this function.
+
+# Parameters
+
+url
+
+string
+
+The precached URL which will be used to lookup the
+Response.
+
+# Returns
+
+RouteHandlerCallback
+
+# getCacheKeyForURL()
+
+workbox-precaching.getCacheKeyForURL( url: string,): string | undefined
+
+Takes in a URL, and returns the corresponding URL that could be used to
+lookup the entry in the precache.
+
+If a relative URL is provided, the location of the service worker file will
+be used as the base.
+
+For precached entries without revision information, the cache key will be the
+same as the original URL.
+
+For precached entries with revision information, the cache key will be the
+original URL with the addition of a query parameter used for keeping track of
+the revision info.
+
+# Parameters
+
+url
+
+string
+
+The URL whose cache key to look up.
+
+# Returns
+
+string | undefined
+
+The cache key that corresponds to that URL.
+
+# matchPrecache()
+
+workbox-precaching.matchPrecache( request: string | Request,): Promise<Response | undefined>
+
+Helper function that calls
+PrecacheController#matchPrecache on the default
+PrecacheController instance.
+
+If you are creating your own PrecacheController, then call
+PrecacheController#matchPrecache on that instance,
+instead of using this function.
+
+# Parameters
+
+request
+
+string | Request
+
+The key (without revisioning parameters)
+to look up in the precache.
+
+# Returns
+
+Promise<Response | undefined>
+
+# precache()
+
+workbox-precaching.precache( entries: (string | PrecacheEntry)[],): void
+
+Adds items to the precache list, removing any duplicates and
+stores the files in the
+cache" when the service
+worker installs.
+
+This method can be called multiple times.
+
+Please note: This method will not serve any of the cached files for you.
+It only precaches files. To respond to a network request you call
+workbox-precaching.addRoute.
+
+If you have a single array of files to precache, you can just call
+workbox-precaching.precacheAndRoute.
+
+# Parameters
+
+entries
+
+(string | PrecacheEntry)[]
+
+# precacheAndRoute()
+
+workbox-precaching.precacheAndRoute( entries: (string | PrecacheEntry)[], options?: PrecacheRouteOptions,): void
+
+This method will add entries to the precache list and add a route to
+respond to fetch events.
+
+This is a convenience method that will call
+workbox-precaching.precache and
+workbox-precaching.addRoute in a single call.
+
+# Parameters
+
+entries
+
+(string | PrecacheEntry)[]
+
+Array of entries to precache.
+
+options
+
+PrecacheRouteOptions optional
+
+Except as otherwise noted, the content of this page is licensed under the Creative Commons Attribution 4.0 License, and code samples are licensed under the Apache 2.0 License. For details, see the Google Developers Site Policies. Java is a registered trademark of Oracle and/or its affiliates.
+
+Last updated 2017-11-27 UTC.

@@ -1,0 +1,48 @@
+{
+  "name": "pwa-offline-check",
+  "version": "1.0.0",
+  "description": "Read a built web app folder and report what stops a Progressive Web App from installing, working offline or updating safely: the web app manifest (name, start_url, display, icons, scope, id), the service worker (registration, scope, fetch handler, precached files, cache versioning, skipWaiting, offline fallback) and the page (viewport, theme color, secure addresses). Each finding names the file and line and quotes the W3C specification, MDN or web.dev. Reads files only, never runs a script, no dependencies.",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "bin": {
+    "pwa-offline-check": "bin/pwa-offline-check.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "docs",
+    "examples",
+    "research",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.js\"",
+    "test:coverage": "node --test --experimental-test-coverage \"test/*.test.js\"",
+    "check": "node tools/check.mjs",
+    "example": "node tools/example.mjs"
+  },
+  "keywords": [
+    "pwa",
+    "progressive-web-app",
+    "service-worker",
+    "web-app-manifest",
+    "offline",
+    "installable",
+    "linter",
+    "cli"
+  ],
+  "author": "INNERLUXES <info@innerluxes.dev>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/INNERLUXES/pwa-offline-check.git"
+  },
+  "homepage": "https://innerluxes.dev/software-development/progressive-web-apps"
+}

@@ -1,0 +1,144 @@
+Source: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/meta/name
+
+# <meta name> HTML attribute
+
+Baseline
+
+Widely available
+
+*
+
+This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.
+
+* Some parts of this feature may have varying levels of support.
+
+See full compatibility
+
+Learn more
+
+The name attribute of the <meta> element provides metadata in name-value pairs.
+When a <meta> element has a name attribute, a content attribute defines the corresponding value.
+The metadata is document-level metadata that applies to the whole page.
+
+For example, the following <meta> tag provides a description as metadata for a document:
+
+html
+
+<meta
+name="description"
+content="The HTML reference describes all elements and attributes of HTML, including global attributes that apply to all elements." />
+
+# Value
+
+# Meta names defined in the HTML specification
+
+The HTML specification defines the following set of standard metadata names:
+
+application-name
+
+Browsers may use this to identify the application running in the web page.
+It is different from the <title> element, which may contain an application (or website) name, but a <title> may add contextual information like a document name or a status.
+Individual pages shouldn't define their own, unique application-name.
+To provide translations, use multiple <meta> tags with the lang attribute for each language:
+
+html
+
+<meta name="application-name" content="Weather Wizard" lang="en" />
+<meta name="application-name" content="Mago del Clima" lang="es" />
+
+author
+
+The document author's name.
+
+color-scheme
+
+Specifies one or more color schemes with which the document is compatible.
+The browser will use this information in tandem with the user's browser or device settings to determine what colors to use for everything from background and foregrounds to form controls and scrollbars.
+The primary use for <meta name="color-scheme"> is to indicate compatibility and order of preference for light and dark color modes.
+
+description
+
+A short and accurate summary of the content of the page usually referred to as a "meta description".
+Search engines like Google use this metadata to adjust the appearance of a webpage in search results.
+
+generator
+
+The identifier of the software that generated the page.
+
+keywords
+
+Words relevant to the page's content separated by commas.
+
+referrer
+
+Controls the HTTP Referer header of requests sent from the document.
+
+theme-color
+
+Indicates a suggested color that user agents should use to customize the display of the page or of the surrounding user interface.
+The content attribute contains a valid CSS <color>.
+The media attribute with a valid media query list can be included to set the media that the theme color metadata applies to.
+
+# Meta names defined in other specifications
+
+responsive-embedded-sizing
+
+Opts in an embedded document to sharing its size information with the parent page. Defined in the CSS box sizing module.
+
+text-scale
+
+Enables opting the page in to having the <html> root element's font-size scale in proportion to OS and browser-level text scale settings. Defined in the CSS fonts module.
+
+viewport
+
+Gives hints about the initial size of the viewport. Defined in the CSS viewport module.
+
+# Meta names defined in the WHATWG MetaExtensions wiki
+
+The WHATWG Wiki MetaExtensions page contains a large set of non-standard metadata names.
+Some of the names included are used quite commonly in practice, notably the following:
+
+creator
+
+The name of the creator of the document, such as an organization or institution.
+If there are more than one, several <meta> elements should be used.
+
+googlebot
+
+A synonym of robots, is only followed by Googlebot (the indexing crawler for Google).
+
+publisher
+
+The document publisher's name.
+
+robots
+
+A comma-separated list of values defining the crawl behavior that cooperative crawlers (or "robots") should use with the page.
+
+# Specifications
+
+Specification
+|
+
+HTML
+# standard-metadata-names |
+
+Referrer Policy
+# referrer-policy-delivery-meta |
+
+# Browser compatibility
+
+# See also
+
+Metadata: the <meta> element
+
+# Help improve MDN
+
+Yes
+
+No
+
+Learn how to contribute
+This page was last modified on Jul 17, 2026 by MDN contributors.
+
+View this page on GitHub • Report a problem with this content

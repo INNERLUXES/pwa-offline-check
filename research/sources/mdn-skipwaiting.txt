@@ -1,0 +1,83 @@
+Source: https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerGlobalScope/skipWaiting
+
+# ServiceWorkerGlobalScope: skipWaiting() method
+
+Baseline
+
+Widely available
+
+This feature is well established and works across many devices and browser versions. It’s been available across browsers since April 2018.
+
+See full compatibility
+
+Learn more
+
+Secure context: This feature is available only in secure contexts (HTTPS), in some or all supporting browsers.
+
+Note: This feature is only available in Service Workers.
+
+The skipWaiting() method of the ServiceWorkerGlobalScope interface forces the waiting service worker to become the active service worker.
+
+Use this method with Clients.claim() to ensure that updates to the underlying service worker take effect immediately for both the current client and all other active clients.
+
+# Syntax
+
+js
+
+skipWaiting()
+
+# Parameters
+
+None.
+
+# Return value
+
+A Promise that resolves with undefined after trying to activate the newly installed service worker.
+
+# Examples
+
+While self.skipWaiting() can be called at any point during the service worker's execution, it will only have an effect if there's a newly installed service worker that might otherwise remain in the waiting state. Therefore, it's common to call self.skipWaiting() from inside of an InstallEvent handler.
+
+The following example causes a newly installed service worker to progress into the activating state, regardless of whether there is already an active service worker.
+
+js
+
+self.addEventListener("install", (event) => {
+// The promise that skipWaiting() returns can be safely ignored.
+self.skipWaiting();
+
+// Perform any other actions required for your
+// service worker to install, potentially inside
+// of event.waitUntil();
+});
+
+# Specifications
+
+Specification
+|
+
+Service Workers Nightly
+# service-worker-global-scope-skipwaiting |
+
+# Browser compatibility
+
+# See also
+
+Using Service Workers
+
+Service workers basic code example
+
+Clients.claim()
+
+Using web workers
+
+# Help improve MDN
+
+Yes
+
+No
+
+Learn how to contribute
+This page was last modified on May 13, 2024 by MDN contributors.
+
+View this page on GitHub • Report a problem with this content
