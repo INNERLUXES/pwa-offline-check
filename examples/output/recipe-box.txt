@@ -1,0 +1,178 @@
+pwa-offline-check: index.html
+read: 4 files (the page, the manifest, 1 script, 1 worker)
+findings: 5 error, 7 warning, 5 info
+
+WARNING  viewport-missing  index.html:1
+         about: meta viewport
+         The page has no <meta name="viewport">. On a narrow screen the browser lays the page out in a wider virtual viewport and shrinks it, so a responsive app looks like a small desktop page.
+         fix: Add <meta name="viewport" content="width=device-width, initial-scale=1"> to the <head>.
+         source (<meta name="viewport"> HTML attribute value, Viewport width and screen width): "The viewport <meta> element mitigates this problem of virtual viewport on narrow screen devices."
+           https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Viewport_meta_element
+         source (<meta name="viewport"> HTML attribute value, Viewport width and screen width): "The recommended setting is the following, which sets the viewport to match the device's width:"
+           https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Viewport_meta_element
+
+INFO     theme-color-missing  index.html:1
+         about: theme-color
+         Neither the page (<meta name="theme-color">) nor the manifest (theme_color) sets a theme color, so the browser draws its own frame around the app.
+         fix: Add <meta name="theme-color" content="#..."> and "theme_color" in the manifest.
+         source (<meta name> HTML attribute, Meta names defined in the HTML specification): "Indicates a suggested color that user agents should use to customize the display of the page or of the surrounding user interface."
+           https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/meta/name
+         source (Web Application Manifest, 1.12 theme_color member): "The manifest's theme_color member is a themeable member that serves as the default theme color for an application context."
+           https://www.w3.org/TR/appmanifest/
+
+INFO     id-missing  manifest.webmanifest:1
+         about: id
+         The manifest has no id, so the identity of the app is its start_url. If start_url changes later, the browser sees a different app and the installed one is not updated.
+         fix: Add "id", for example "/" or "/recipes/", and keep it as it is for the life of the app.
+         source (Web Application Manifest, 1.11 id member): "Set manifest["id"] to manifest["start_url"]."
+           https://www.w3.org/TR/appmanifest/
+         source (Web Application Manifest, 1.11 id member): "When the user agent sees a manifest with an identity that does not correspond to an already-installed application, it SHOULD treat that manifest as a description of a distinct application, even if it is served from the same URL as that of another application."
+           https://www.w3.org/TR/appmanifest/
+         source (id, Description): "When a browser comes across an app manifest with an id that does not correspond to an already installed application, it treats that manifest as a description of a distinct application, even if it is served from the same URL as another application."
+           https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference/id
+
+WARNING  scope-excludes-start-url  manifest.webmanifest:4
+         about: scope
+         start_url (/index.html) is not within scope (/recipes/), so the scope is ignored and the browser uses the folder of start_url instead.
+         fix: Make scope a path that start_url begins with, for example the folder of start_url.
+         source (Web Application Manifest, 1.6 scope member): "If manifest["start_url"] is not within scope of scope, return."
+           https://www.w3.org/TR/appmanifest/
+         source (Web Application Manifest, 5. Navigation scope): "Return a boolean indicating whether targetPath starts with scopePath."
+           https://www.w3.org/TR/appmanifest/
+         source (scope, Values): "If scope is not specified in the manifest or the value is invalid (i.e., not a string, not a valid URL, or start_url is not within the specified scope), the effective scope will be set to the start_url value after removing its filename, query, and fragment."
+           https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference/scope
+
+ERROR    display-not-installable  manifest.webmanifest:5
+         about: display
+         The display mode is "browser", which is not one of fullscreen, standalone, minimal-ui or window-controls-overlay, the modes that the install criteria accept.
+         fix: Set "display" to "standalone" (or "minimal-ui", "fullscreen").
+         source (What does it take to be installable?, Install criteria): "In Chrome, your Progressive Web App must meet the following criteria before it will fire the beforeinstallprompt event and show the in-browser install promotion:"
+           https://web.dev/articles/install-criteria
+         source (What does it take to be installable?, Install criteria): "display - must be one of fullscreen, standalone, minimal-ui, or window-controls-overlay"
+           https://web.dev/articles/install-criteria
+
+INFO     maskable-icon-missing  manifest.webmanifest:7
+         about: icons
+         No icon has the purpose "maskable". An icon without it can be cropped or shown on a plain background by the system, and the specification says an icon is only to be used for its stated purpose.
+         fix: Add a 512x512 icon with "purpose": "maskable", with the artwork inside the safe zone.
+         source (Web Application Manifest, 2.1 purpose member): "The image is designed with icon masks and safe zone in mind, such that any part of the image that is outside the safe zone can safely be ignored and masked away by the user agent."
+           https://www.w3.org/TR/appmanifest/
+
+ERROR    icon-file-missing  manifest.webmanifest:13
+         about: icons[1]
+         The icon icons/icon-256.svg names /icons/icon-256.svg, and no such file is in the folder. A browser cannot use an icon that it cannot fetch (this conclusion is the tool's own).
+         fix: Add the image at that path, or correct src.
+         source (icons, Values): "Each icon object can have one or more properties. Of these, only src is required."
+           https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference/icons
+
+WARNING  icon-sizes-missing  manifest.webmanifest:13
+         about: icons[1]
+         The icon icons/icon-256.svg has no sizes, so the browser cannot choose it by size.
+         fix: Add "sizes", for example "192x192", the exact size of the image.
+         source (icons, Values): "If sizes is not specified, the selection and display of the icon may vary depending on the browser's implementation."
+           https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference/icons
+
+INFO     icon-type-missing  manifest.webmanifest:13
+         about: icons[1]
+         The icon icons/icon-256.svg has no type, so the browser infers the image type from the file extension.
+         fix: Add "type", for example "image/png".
+         source (icons, Values): "If omitted, browsers typically infer the image type from the file extension."
+           https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference/icons
+         source (icons, Performance considerations): "Specifying the type property can significantly improve performance because it allows browsers to ignore images with unsupported formats more easily."
+           https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference/icons
+
+ERROR    insecure-url  manifest.webmanifest:16
+         about: icons[2].src
+         The manifest member icons[2].src is http://recipebox.example/icons/icon-512.svg, an address that is served over http. A service worker needs a secure context, and the install criteria name HTTPS, so the app cannot be installed or work offline from there.
+         fix: Serve the app and every address it names over https. http is allowed only for localhost and the loopback addresses, for development.
+         source (Service Workers Nightly, 6.1. Secure Context): "Service workers must execute in secure contexts."
+           https://www.w3.org/TR/service-workers/
+         source (Service Workers Nightly, 6.1. Secure Context): "This effectively means that service workers and their service worker clients need to be hosted over HTTPS."
+           https://www.w3.org/TR/service-workers/
+         source (Making PWAs installable, HTTPS, localhost, or loopback are required): "For a PWA to be installable it must be served using the https protocol, or from a local development environment using localhost or 127.0.0.1 — with or without a port number."
+           https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable
+         source (What does it take to be installable?, Install criteria): "Be served over HTTPS."
+           https://web.dev/articles/install-criteria
+         source (Service Workers Nightly, 6.1. Secure Context): "A user agent can allow localhost (see the requirements), 127.0.0.0/8, and ::1/128 for development purposes."
+           https://www.w3.org/TR/service-workers/
+
+WARNING  sw-scope-too-wide  js/app.js:12
+         about: /
+         register() asks for the scope /, but the worker is at /js/sw.js, so the widest scope it can have is /js/. The registration fails unless the server sends a Service-Worker-Allowed header for the worker file; the tool does not see headers.
+         fix: Move the worker to /, or narrow the scope, or send Service-Worker-Allowed with the worker.
+         source (Service Workers Nightly, 6.5. Path restriction): "a service worker script at https://www.example.com/~bob/sw.js can be registered for the scope url https://www.example.com/~bob/ but not for the scope https://www.example.com/ or https://www.example.com/~alice/."
+           https://www.w3.org/TR/service-workers/
+         source (Service Workers Nightly, 6.5. Path restriction): "Servers can remove the path restriction by setting a Service-Worker-Allowed header on the service worker script."
+           https://www.w3.org/TR/service-workers/
+         source (Using Service Workers, Why is my service worker failing to register?): "The service worker registration contains a scope option broader than permitted by the worker path."
+           https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers
+         source (Service-Worker-Allowed header, Using Service-Worker-Allowed to broaden service worker scope): "If the server doesn't set the header, the service worker registration will fail, as the scope option ({ scope: "/" }) requests a scope broader than the directory where the service worker script is located (/product/sw.js)."
+           https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Service-Worker-Allowed
+
+ERROR    precache-file-missing  js/sw.js:2
+         about: /img/logo.png
+         The worker caches /img/logo.png, and no such file is in the folder. The list is relative to the worker file, and the install fails if one file in it cannot be fetched, so the app gets no offline copy (this conclusion about the file is the tool's own).
+         fix: Remove the file from the list, or add the file, or correct the path.
+         source (Service Workers Nightly, 5.4.4. addAll(requests)): "If response’s type is "error", or response’s status is not an ok status or is 206, reject responsePromise with a TypeError."
+           https://www.w3.org/TR/service-workers/
+         source (Service Workers Nightly, 4.4.1. event.waitUntil(f)): "If any of the promises rejects, the installation fails."
+           https://www.w3.org/TR/service-workers/
+         source (Using Service Workers, Install and activate: populating your cache): "If the promise is rejected, the installation fails, and the worker won't do anything."
+           https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers
+         source (Using Service Workers, Install and activate: populating your cache): "The URLs are relative to the worker's location."
+           https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers
+
+ERROR    precache-file-missing  js/sw.js:2
+         about: /offline.html
+         The worker caches /offline.html, and no such file is in the folder. The list is relative to the worker file, and the install fails if one file in it cannot be fetched, so the app gets no offline copy (this conclusion about the file is the tool's own).
+         fix: Remove the file from the list, or add the file, or correct the path.
+         source (Service Workers Nightly, 5.4.4. addAll(requests)): "If response’s type is "error", or response’s status is not an ok status or is 206, reject responsePromise with a TypeError."
+           https://www.w3.org/TR/service-workers/
+         source (Service Workers Nightly, 4.4.1. event.waitUntil(f)): "If any of the promises rejects, the installation fails."
+           https://www.w3.org/TR/service-workers/
+         source (Using Service Workers, Install and activate: populating your cache): "If the promise is rejected, the installation fails, and the worker won't do anything."
+           https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers
+         source (Using Service Workers, Install and activate: populating your cache): "The URLs are relative to the worker's location."
+           https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers
+
+INFO     sw-skip-waiting  js/sw.js:5
+         about: skipWaiting
+         The worker calls skipWaiting(), so a new version takes over at once, while pages that the old version controls are still open. Those pages and the new worker can disagree about the files and the cache (this conclusion is the tool's own).
+         fix: Keep it only if the new worker works with the pages of the old version, or ask the user to reload.
+         source (Service Workers Nightly, 4.1.4. skipWaiting()): "The skipWaiting() method allows this service worker to progress from the registration’s waiting position to active even while service worker clients are using the registration."
+           https://www.w3.org/TR/service-workers/
+         source (ServiceWorkerGlobalScope: skipWaiting() method): "The skipWaiting() method of the ServiceWorkerGlobalScope interface forces the waiting service worker to become the active service worker."
+           https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerGlobalScope/skipWaiting
+         source (Using Service Workers, Replacing an existing service worker): "When installation completes successfully, the new version waits while the old version is still controlling clients."
+           https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers
+
+WARNING  sw-cache-unversioned  js/sw.js:6
+         about: recipe-box
+         The cache is named "recipe-box", with no version in the name, and the worker has no activate handler that deletes old caches. When the files change, the old copies stay in the browser until something clears them (this conclusion is the tool's own).
+         fix: Put a version in the cache name (for example "app-v2") and, in the activate handler, delete the caches whose names are not the current one.
+         source (Using Service Workers, Install and activate: populating your cache): "The contents of the cache are kept until you clear them."
+           https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers
+         source (Using Service Workers, Deleting old caches): "You can use the activate event to remove data from the previous caches."
+           https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers
+         source (Using Service Workers, Updating your service worker): "We are calling the new cache v2, so the previous v1 cache isn't disturbed."
+           https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers
+         source (Using Service Workers, Deleting old caches): "While there are open pages that are controlled by the previous version of the worker, you need to keep both caches, because the previous version needs its version of the cache."
+           https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers
+
+WARNING  sw-no-offline-fallback  js/sw.js:9
+         about: fetch
+         The fetch handler has no fallback for a request that cannot be answered: no catch that returns a cached page or a Response, and no cached offline page matched by a fixed address. When the network is gone and a page is not in the cache, the browser shows its own error page.
+         fix: Cache an offline page when the worker installs, and return it from a catch (caches.match("/offline.html")) when a navigation fails.
+         source (Using Service Workers, Recovering failed requests): "The only trouble we have now is that if the request doesn't match anything in the cache, and the network is not available, our request will still fail."
+           https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers
+         source (Using Service Workers, Recovering failed requests): "Let's provide a default fallback so that whatever happens, the user will at least get something:"
+           https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers
+
+WARNING  sw-cache-non-get  js/sw.js:14
+         about: cache.put
+         The worker puts responses into a cache and never looks at the request method. A cache accepts only GET requests, so a POST or another method makes put() fail with a TypeError (this conclusion about your code is the tool's own).
+         fix: Cache only when event.request.method === "GET", and let other requests go to the network.
+         source (Service Workers Nightly, 5.4.5. put(request, response)): "If innerRequest’s url’s scheme is not one of "http" and "https", or innerRequest’s method is not `GET`, return a promise rejected with a TypeError."
+           https://www.w3.org/TR/service-workers/
+
+GATE: FAIL - 5 errors

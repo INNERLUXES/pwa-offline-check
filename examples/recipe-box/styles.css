@@ -1,0 +1,10 @@
+body {
+  font-family: Georgia, serif;
+  margin: 1.5rem;
+  background: #fffaf0;
+  color: #3b2a1a;
+}
+
+#recipes li {
+  margin: 0.4rem 0;
+}

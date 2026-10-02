@@ -1,0 +1,498 @@
+{
+  "tool": "pwa-offline-check",
+  "version": "1.0.0",
+  "page": "index.html",
+  "input": {
+    "files": [
+      {
+        "path": "index.html",
+        "kind": "page",
+        "bytes": 303
+      },
+      {
+        "path": "manifest.webmanifest",
+        "kind": "manifest",
+        "bytes": 435
+      },
+      {
+        "path": "js/app.js",
+        "kind": "script",
+        "bytes": 434
+      },
+      {
+        "path": "js/sw.js",
+        "kind": "worker",
+        "bytes": 611
+      }
+    ],
+    "manifest": "manifest.webmanifest",
+    "workers": [
+      "js/sw.js"
+    ],
+    "scripts": 1
+  },
+  "findings": [
+    {
+      "id": "viewport-missing",
+      "severity": "warning",
+      "file": "index.html",
+      "line": 1,
+      "subject": "meta viewport",
+      "message": "The page has no <meta name=\"viewport\">. On a narrow screen the browser lays the page out in a wider virtual viewport and shrinks it, so a responsive app looks like a small desktop page.",
+      "fix": "Add <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"> to the <head>.",
+      "manual": [
+        {
+          "page": "<meta name=\"viewport\"> HTML attribute value",
+          "section": "Viewport width and screen width",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Viewport_meta_element",
+          "quote": "The viewport <meta> element mitigates this problem of virtual viewport on narrow screen devices."
+        },
+        {
+          "page": "<meta name=\"viewport\"> HTML attribute value",
+          "section": "Viewport width and screen width",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Viewport_meta_element",
+          "quote": "The recommended setting is the following, which sets the viewport to match the device's width:"
+        }
+      ]
+    },
+    {
+      "id": "theme-color-missing",
+      "severity": "info",
+      "file": "index.html",
+      "line": 1,
+      "subject": "theme-color",
+      "message": "Neither the page (<meta name=\"theme-color\">) nor the manifest (theme_color) sets a theme color, so the browser draws its own frame around the app.",
+      "fix": "Add <meta name=\"theme-color\" content=\"#...\"> and \"theme_color\" in the manifest.",
+      "manual": [
+        {
+          "page": "<meta name> HTML attribute",
+          "section": "Meta names defined in the HTML specification",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/meta/name",
+          "quote": "Indicates a suggested color that user agents should use to customize the display of the page or of the surrounding user interface."
+        },
+        {
+          "page": "Web Application Manifest",
+          "section": "1.12 theme_color member",
+          "url": "https://www.w3.org/TR/appmanifest/",
+          "quote": "The manifest's theme_color member is a themeable member that serves as the default theme color for an application context."
+        }
+      ]
+    },
+    {
+      "id": "id-missing",
+      "severity": "info",
+      "file": "manifest.webmanifest",
+      "line": 1,
+      "subject": "id",
+      "message": "The manifest has no id, so the identity of the app is its start_url. If start_url changes later, the browser sees a different app and the installed one is not updated.",
+      "fix": "Add \"id\", for example \"/\" or \"/recipes/\", and keep it as it is for the life of the app.",
+      "manual": [
+        {
+          "page": "Web Application Manifest",
+          "section": "1.11 id member",
+          "url": "https://www.w3.org/TR/appmanifest/",
+          "quote": "Set manifest[\"id\"] to manifest[\"start_url\"]."
+        },
+        {
+          "page": "Web Application Manifest",
+          "section": "1.11 id member",
+          "url": "https://www.w3.org/TR/appmanifest/",
+          "quote": "When the user agent sees a manifest with an identity that does not correspond to an already-installed application, it SHOULD treat that manifest as a description of a distinct application, even if it is served from the same URL as that of another application."
+        },
+        {
+          "page": "id",
+          "section": "Description",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference/id",
+          "quote": "When a browser comes across an app manifest with an id that does not correspond to an already installed application, it treats that manifest as a description of a distinct application, even if it is served from the same URL as another application."
+        }
+      ]
+    },
+    {
+      "id": "scope-excludes-start-url",
+      "severity": "warning",
+      "file": "manifest.webmanifest",
+      "line": 4,
+      "subject": "scope",
+      "message": "start_url (/index.html) is not within scope (/recipes/), so the scope is ignored and the browser uses the folder of start_url instead.",
+      "fix": "Make scope a path that start_url begins with, for example the folder of start_url.",
+      "manual": [
+        {
+          "page": "Web Application Manifest",
+          "section": "1.6 scope member",
+          "url": "https://www.w3.org/TR/appmanifest/",
+          "quote": "If manifest[\"start_url\"] is not within scope of scope, return."
+        },
+        {
+          "page": "Web Application Manifest",
+          "section": "5. Navigation scope",
+          "url": "https://www.w3.org/TR/appmanifest/",
+          "quote": "Return a boolean indicating whether targetPath starts with scopePath."
+        },
+        {
+          "page": "scope",
+          "section": "Values",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference/scope",
+          "quote": "If scope is not specified in the manifest or the value is invalid (i.e., not a string, not a valid URL, or start_url is not within the specified scope), the effective scope will be set to the start_url value after removing its filename, query, and fragment."
+        }
+      ]
+    },
+    {
+      "id": "display-not-installable",
+      "severity": "error",
+      "file": "manifest.webmanifest",
+      "line": 5,
+      "subject": "display",
+      "message": "The display mode is \"browser\", which is not one of fullscreen, standalone, minimal-ui or window-controls-overlay, the modes that the install criteria accept.",
+      "fix": "Set \"display\" to \"standalone\" (or \"minimal-ui\", \"fullscreen\").",
+      "manual": [
+        {
+          "page": "What does it take to be installable?",
+          "section": "Install criteria",
+          "url": "https://web.dev/articles/install-criteria",
+          "quote": "In Chrome, your Progressive Web App must meet the following criteria before it will fire the beforeinstallprompt event and show the in-browser install promotion:"
+        },
+        {
+          "page": "What does it take to be installable?",
+          "section": "Install criteria",
+          "url": "https://web.dev/articles/install-criteria",
+          "quote": "display - must be one of fullscreen, standalone, minimal-ui, or window-controls-overlay"
+        }
+      ]
+    },
+    {
+      "id": "maskable-icon-missing",
+      "severity": "info",
+      "file": "manifest.webmanifest",
+      "line": 7,
+      "subject": "icons",
+      "message": "No icon has the purpose \"maskable\". An icon without it can be cropped or shown on a plain background by the system, and the specification says an icon is only to be used for its stated purpose.",
+      "fix": "Add a 512x512 icon with \"purpose\": \"maskable\", with the artwork inside the safe zone.",
+      "manual": [
+        {
+          "page": "Web Application Manifest",
+          "section": "2.1 purpose member",
+          "url": "https://www.w3.org/TR/appmanifest/",
+          "quote": "The image is designed with icon masks and safe zone in mind, such that any part of the image that is outside the safe zone can safely be ignored and masked away by the user agent."
+        }
+      ]
+    },
+    {
+      "id": "icon-file-missing",
+      "severity": "error",
+      "file": "manifest.webmanifest",
+      "line": 13,
+      "subject": "icons[1]",
+      "message": "The icon icons/icon-256.svg names /icons/icon-256.svg, and no such file is in the folder. A browser cannot use an icon that it cannot fetch (this conclusion is the tool's own).",
+      "fix": "Add the image at that path, or correct src.",
+      "manual": [
+        {
+          "page": "icons",
+          "section": "Values",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference/icons",
+          "quote": "Each icon object can have one or more properties. Of these, only src is required."
+        }
+      ]
+    },
+    {
+      "id": "icon-sizes-missing",
+      "severity": "warning",
+      "file": "manifest.webmanifest",
+      "line": 13,
+      "subject": "icons[1]",
+      "message": "The icon icons/icon-256.svg has no sizes, so the browser cannot choose it by size.",
+      "fix": "Add \"sizes\", for example \"192x192\", the exact size of the image.",
+      "manual": [
+        {
+          "page": "icons",
+          "section": "Values",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference/icons",
+          "quote": "If sizes is not specified, the selection and display of the icon may vary depending on the browser's implementation."
+        }
+      ]
+    },
+    {
+      "id": "icon-type-missing",
+      "severity": "info",
+      "file": "manifest.webmanifest",
+      "line": 13,
+      "subject": "icons[1]",
+      "message": "The icon icons/icon-256.svg has no type, so the browser infers the image type from the file extension.",
+      "fix": "Add \"type\", for example \"image/png\".",
+      "manual": [
+        {
+          "page": "icons",
+          "section": "Values",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference/icons",
+          "quote": "If omitted, browsers typically infer the image type from the file extension."
+        },
+        {
+          "page": "icons",
+          "section": "Performance considerations",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference/icons",
+          "quote": "Specifying the type property can significantly improve performance because it allows browsers to ignore images with unsupported formats more easily."
+        }
+      ]
+    },
+    {
+      "id": "insecure-url",
+      "severity": "error",
+      "file": "manifest.webmanifest",
+      "line": 16,
+      "subject": "icons[2].src",
+      "message": "The manifest member icons[2].src is http://recipebox.example/icons/icon-512.svg, an address that is served over http. A service worker needs a secure context, and the install criteria name HTTPS, so the app cannot be installed or work offline from there.",
+      "fix": "Serve the app and every address it names over https. http is allowed only for localhost and the loopback addresses, for development.",
+      "manual": [
+        {
+          "page": "Service Workers Nightly",
+          "section": "6.1. Secure Context",
+          "url": "https://www.w3.org/TR/service-workers/",
+          "quote": "Service workers must execute in secure contexts."
+        },
+        {
+          "page": "Service Workers Nightly",
+          "section": "6.1. Secure Context",
+          "url": "https://www.w3.org/TR/service-workers/",
+          "quote": "This effectively means that service workers and their service worker clients need to be hosted over HTTPS."
+        },
+        {
+          "page": "Making PWAs installable",
+          "section": "HTTPS, localhost, or loopback are required",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable",
+          "quote": "For a PWA to be installable it must be served using the https protocol, or from a local development environment using localhost or 127.0.0.1 — with or without a port number."
+        },
+        {
+          "page": "What does it take to be installable?",
+          "section": "Install criteria",
+          "url": "https://web.dev/articles/install-criteria",
+          "quote": "Be served over HTTPS."
+        },
+        {
+          "page": "Service Workers Nightly",
+          "section": "6.1. Secure Context",
+          "url": "https://www.w3.org/TR/service-workers/",
+          "quote": "A user agent can allow localhost (see the requirements), 127.0.0.0/8, and ::1/128 for development purposes."
+        }
+      ]
+    },
+    {
+      "id": "sw-scope-too-wide",
+      "severity": "warning",
+      "file": "js/app.js",
+      "line": 12,
+      "subject": "/",
+      "message": "register() asks for the scope /, but the worker is at /js/sw.js, so the widest scope it can have is /js/. The registration fails unless the server sends a Service-Worker-Allowed header for the worker file; the tool does not see headers.",
+      "fix": "Move the worker to /, or narrow the scope, or send Service-Worker-Allowed with the worker.",
+      "manual": [
+        {
+          "page": "Service Workers Nightly",
+          "section": "6.5. Path restriction",
+          "url": "https://www.w3.org/TR/service-workers/",
+          "quote": "a service worker script at https://www.example.com/~bob/sw.js can be registered for the scope url https://www.example.com/~bob/ but not for the scope https://www.example.com/ or https://www.example.com/~alice/."
+        },
+        {
+          "page": "Service Workers Nightly",
+          "section": "6.5. Path restriction",
+          "url": "https://www.w3.org/TR/service-workers/",
+          "quote": "Servers can remove the path restriction by setting a Service-Worker-Allowed header on the service worker script."
+        },
+        {
+          "page": "Using Service Workers",
+          "section": "Why is my service worker failing to register?",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers",
+          "quote": "The service worker registration contains a scope option broader than permitted by the worker path."
+        },
+        {
+          "page": "Service-Worker-Allowed header",
+          "section": "Using Service-Worker-Allowed to broaden service worker scope",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Service-Worker-Allowed",
+          "quote": "If the server doesn't set the header, the service worker registration will fail, as the scope option ({ scope: \"/\" }) requests a scope broader than the directory where the service worker script is located (/product/sw.js)."
+        }
+      ]
+    },
+    {
+      "id": "precache-file-missing",
+      "severity": "error",
+      "file": "js/sw.js",
+      "line": 2,
+      "subject": "/img/logo.png",
+      "message": "The worker caches /img/logo.png, and no such file is in the folder. The list is relative to the worker file, and the install fails if one file in it cannot be fetched, so the app gets no offline copy (this conclusion about the file is the tool's own).",
+      "fix": "Remove the file from the list, or add the file, or correct the path.",
+      "manual": [
+        {
+          "page": "Service Workers Nightly",
+          "section": "5.4.4. addAll(requests)",
+          "url": "https://www.w3.org/TR/service-workers/",
+          "quote": "If response’s type is \"error\", or response’s status is not an ok status or is 206, reject responsePromise with a TypeError."
+        },
+        {
+          "page": "Service Workers Nightly",
+          "section": "4.4.1. event.waitUntil(f)",
+          "url": "https://www.w3.org/TR/service-workers/",
+          "quote": "If any of the promises rejects, the installation fails."
+        },
+        {
+          "page": "Using Service Workers",
+          "section": "Install and activate: populating your cache",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers",
+          "quote": "If the promise is rejected, the installation fails, and the worker won't do anything."
+        },
+        {
+          "page": "Using Service Workers",
+          "section": "Install and activate: populating your cache",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers",
+          "quote": "The URLs are relative to the worker's location."
+        }
+      ]
+    },
+    {
+      "id": "precache-file-missing",
+      "severity": "error",
+      "file": "js/sw.js",
+      "line": 2,
+      "subject": "/offline.html",
+      "message": "The worker caches /offline.html, and no such file is in the folder. The list is relative to the worker file, and the install fails if one file in it cannot be fetched, so the app gets no offline copy (this conclusion about the file is the tool's own).",
+      "fix": "Remove the file from the list, or add the file, or correct the path.",
+      "manual": [
+        {
+          "page": "Service Workers Nightly",
+          "section": "5.4.4. addAll(requests)",
+          "url": "https://www.w3.org/TR/service-workers/",
+          "quote": "If response’s type is \"error\", or response’s status is not an ok status or is 206, reject responsePromise with a TypeError."
+        },
+        {
+          "page": "Service Workers Nightly",
+          "section": "4.4.1. event.waitUntil(f)",
+          "url": "https://www.w3.org/TR/service-workers/",
+          "quote": "If any of the promises rejects, the installation fails."
+        },
+        {
+          "page": "Using Service Workers",
+          "section": "Install and activate: populating your cache",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers",
+          "quote": "If the promise is rejected, the installation fails, and the worker won't do anything."
+        },
+        {
+          "page": "Using Service Workers",
+          "section": "Install and activate: populating your cache",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers",
+          "quote": "The URLs are relative to the worker's location."
+        }
+      ]
+    },
+    {
+      "id": "sw-skip-waiting",
+      "severity": "info",
+      "file": "js/sw.js",
+      "line": 5,
+      "subject": "skipWaiting",
+      "message": "The worker calls skipWaiting(), so a new version takes over at once, while pages that the old version controls are still open. Those pages and the new worker can disagree about the files and the cache (this conclusion is the tool's own).",
+      "fix": "Keep it only if the new worker works with the pages of the old version, or ask the user to reload.",
+      "manual": [
+        {
+          "page": "Service Workers Nightly",
+          "section": "4.1.4. skipWaiting()",
+          "url": "https://www.w3.org/TR/service-workers/",
+          "quote": "The skipWaiting() method allows this service worker to progress from the registration’s waiting position to active even while service worker clients are using the registration."
+        },
+        {
+          "page": "ServiceWorkerGlobalScope: skipWaiting() method",
+          "section": "ServiceWorkerGlobalScope: skipWaiting() method",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerGlobalScope/skipWaiting",
+          "quote": "The skipWaiting() method of the ServiceWorkerGlobalScope interface forces the waiting service worker to become the active service worker."
+        },
+        {
+          "page": "Using Service Workers",
+          "section": "Replacing an existing service worker",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers",
+          "quote": "When installation completes successfully, the new version waits while the old version is still controlling clients."
+        }
+      ]
+    },
+    {
+      "id": "sw-cache-unversioned",
+      "severity": "warning",
+      "file": "js/sw.js",
+      "line": 6,
+      "subject": "recipe-box",
+      "message": "The cache is named \"recipe-box\", with no version in the name, and the worker has no activate handler that deletes old caches. When the files change, the old copies stay in the browser until something clears them (this conclusion is the tool's own).",
+      "fix": "Put a version in the cache name (for example \"app-v2\") and, in the activate handler, delete the caches whose names are not the current one.",
+      "manual": [
+        {
+          "page": "Using Service Workers",
+          "section": "Install and activate: populating your cache",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers",
+          "quote": "The contents of the cache are kept until you clear them."
+        },
+        {
+          "page": "Using Service Workers",
+          "section": "Deleting old caches",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers",
+          "quote": "You can use the activate event to remove data from the previous caches."
+        },
+        {
+          "page": "Using Service Workers",
+          "section": "Updating your service worker",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers",
+          "quote": "We are calling the new cache v2, so the previous v1 cache isn't disturbed."
+        },
+        {
+          "page": "Using Service Workers",
+          "section": "Deleting old caches",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers",
+          "quote": "While there are open pages that are controlled by the previous version of the worker, you need to keep both caches, because the previous version needs its version of the cache."
+        }
+      ]
+    },
+    {
+      "id": "sw-no-offline-fallback",
+      "severity": "warning",
+      "file": "js/sw.js",
+      "line": 9,
+      "subject": "fetch",
+      "message": "The fetch handler has no fallback for a request that cannot be answered: no catch that returns a cached page or a Response, and no cached offline page matched by a fixed address. When the network is gone and a page is not in the cache, the browser shows its own error page.",
+      "fix": "Cache an offline page when the worker installs, and return it from a catch (caches.match(\"/offline.html\")) when a navigation fails.",
+      "manual": [
+        {
+          "page": "Using Service Workers",
+          "section": "Recovering failed requests",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers",
+          "quote": "The only trouble we have now is that if the request doesn't match anything in the cache, and the network is not available, our request will still fail."
+        },
+        {
+          "page": "Using Service Workers",
+          "section": "Recovering failed requests",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers",
+          "quote": "Let's provide a default fallback so that whatever happens, the user will at least get something:"
+        }
+      ]
+    },
+    {
+      "id": "sw-cache-non-get",
+      "severity": "warning",
+      "file": "js/sw.js",
+      "line": 14,
+      "subject": "cache.put",
+      "message": "The worker puts responses into a cache and never looks at the request method. A cache accepts only GET requests, so a POST or another method makes put() fail with a TypeError (this conclusion about your code is the tool's own).",
+      "fix": "Cache only when event.request.method === \"GET\", and let other requests go to the network.",
+      "manual": [
+        {
+          "page": "Service Workers Nightly",
+          "section": "5.4.5. put(request, response)",
+          "url": "https://www.w3.org/TR/service-workers/",
+          "quote": "If innerRequest’s url’s scheme is not one of \"http\" and \"https\", or innerRequest’s method is not `GET`, return a promise rejected with a TypeError."
+        }
+      ]
+    }
+  ],
+  "notes": [],
+  "counts": {
+    "error": 5,
+    "warning": 7,
+    "info": 5
+  },
+  "gate": {
+    "failOn": "error",
+    "pass": false,
+    "reason": "5 errors"
+  }
+}
